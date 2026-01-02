@@ -1,121 +1,220 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>AI 租屋小秘書 - 桃園版</title>
-    <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; line-height: 1.6; }
-        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
-        #result { margin-top: 20px; white-space: pre-wrap; background: #f8f9fa; padding: 10px; display: none; }
-        .loading { color: #666; font-style: italic; display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; }
+    [x-cloak] { display: none !important; }
+
+    .custom-bg {
+      background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1000&q=80'); 
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(8px) brightness(0.85); 
+      transform: scale(1.1);
+    }
+
+    .range-slider input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      background: transparent;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    .range-slider input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      pointer-events: auto;
+      border: 3px solid white;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+  </style>
 </head>
-<body>
-    <div class="card">
-        <h2>🏠 AI 租屋小秘書</h2>
-        <p>輸入 Email 即可免費搜尋 3 次</p>
-        <input type="email" id="email" placeholder="請輸入您的 Email" required>
-        <select id="district">
-            <option value="桃園區">桃園區</option>
-            <option value="中壢區">中壢區</option>
-            <option value="八德區">八德區</option>
-            <option value="平鎮區">平鎮區</option>
-        </select>
-        <input type="number" id="price" placeholder="最高預算 (例如 20000)">
-        <button onclick="startSearch()">開始 AI 搜尋</button>
-        <div id="loading" class="loading">🔍 AI 正在爬取社團並分析中，請稍候約 30-45 秒...</div>
-        <div id="result"></div>
+<body class="relative min-h-screen overflow-hidden flex items-center justify-center p-4" x-data="rentApp()">
+
+  <div class="fixed inset-0 custom-bg z-0"></div>
+  <div class="fixed inset-0 bg-blue-900/10 z-0"></div>
+
+  <div class="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 md:p-10 border border-white/40">
+    
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-black text-slate-900 mb-2 tracking-tight">FB 租屋快搜</h1>
+      <p class="text-slate-500 text-sm font-medium leading-relaxed">不再手動刷社團！自動幫你過濾釣魚文，<br>精準鎖定全台私房房源。</p>
     </div>
 
-    <script>
-        async function startSearch() {
-            const email = document.getElementById('email').value;
-            const district = document.getElementById('district').value;
-            const price = document.getElementById('price').value;
-            
-            if(!email) { alert('請填寫 Email'); return; }
+    <div class="space-y-7">
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+          <span class="mr-2">📍</span> 您想住在哪個區域？
+        </label>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <template x-for="city in Object.keys(districtsData)" :key="city">
+            <button @click="currentCity = city" 
+              :class="currentCity === city ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all" x-text="city"></button>
+          </template>
+        </div>
+        <div class="bg-slate-50/60 p-4 rounded-2xl flex flex-wrap gap-2 border border-slate-100">
+          <template x-for="dist in districtsData[currentCity]" :key="dist">
+            <button 
+              @click="toggleDistrict(dist)"
+              :class="selectedDistricts.includes(dist) ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-slate-400 border-slate-100'"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:border-blue-200"
+              x-text="dist">
+            </button>
+          </template>
+        </div>
+      </div>
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('result').style.display = 'none';
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <label class="text-sm font-bold text-slate-700 flex items-center">
+            <span class="mr-2">💰</span> 預算範圍 (月租)
+          </label>
+          <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+            <input type="number" x-model.number="minPrice" @input="updateSlider()" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
+            <span class="text-slate-400 text-xs">~</span>
+            <input type="number" x-model.number="maxPrice" @input="updateSlider()" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
+          </div>
+        </div>
+        <div class="relative w-full h-6 flex items-center range-slider">
+          <div class="absolute w-full h-2 bg-slate-200 rounded-lg"></div>
+          <div class="absolute h-2 bg-blue-500 rounded-lg z-10"
+               :style="`left: ${((minPrice - 3000) / 47000) * 100}%; right: ${100 - ((maxPrice - 3000) / 47000) * 100}%` ">
+          </div>
+          <input type="range" min="3000" max="50000" step="500" x-model.number="minPrice" @input="checkPrice()" class="z-20">
+          <input type="range" min="3000" max="50000" step="500" x-model.number="maxPrice" @input="checkPrice()" class="z-30">
+        </div>
+      </div>
 
-            try {
-                const response = await fetch('你的_N8N_WEBHOOK_URL', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, district, price })
-                });
-                
-                const data = await response.json();
-                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-                document.getElementById('result').style.display = 'block';
-            } catch (error) {
-                alert('搜尋失敗，請檢查 n8n 連線');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-    </script>
-</body>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>AI 租屋小秘書 - 桃園版</title>
-    <style>
-        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; line-height: 1.6; }
-        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
-        #result { margin-top: 20px; white-space: pre-wrap; background: #f8f9fa; padding: 10px; display: none; }
-        .loading { color: #666; font-style: italic; display: none; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2>🏠 AI 租屋小秘書</h2>
-        <p>輸入 Email 即可免費搜尋 3 次</p>
-        <input type="email" id="email" placeholder="請輸入您的 Email" required>
-        <select id="district">
-            <option value="桃園區">桃園區</option>
-            <option value="中壢區">中壢區</option>
-            <option value="八德區">八德區</option>
-            <option value="平鎮區">平鎮區</option>
-        </select>
-        <input type="number" id="price" placeholder="最高預算 (例如 20000)">
-        <button onclick="startSearch()">開始 AI 搜尋</button>
-        <div id="loading" class="loading">🔍 AI 正在爬取社團並分析中，請稍候約 30-45 秒...</div>
-        <div id="result"></div>
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+          <span class="mr-2">✨</span> 特定需求
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="tag in tagsData" :key="tag">
+            <button @click="toggleTag(tag)"
+              :class="selectedTags.includes(tag) ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-500 border-slate-200'"
+              class="px-4 py-2 rounded-full text-xs font-bold border transition-all" x-text="tag">
+            </button>
+          </template>
+        </div>
+      </div>
+
+      <button @click="showModal = true" :disabled="isSearching"
+        class="w-full py-4.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-lg rounded-2xl shadow-xl flex items-center justify-center min-h-[64px] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70">
+        <span x-show="isSearching" class="flex items-center" x-cloak>
+          <svg class="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          正在挖出隱藏好房...
+        </span>
+        <span x-show="!isSearching">⚡ 挖出隱藏好房</span>
+      </button>
     </div>
 
-    <script>
-        async function startSearch() {
-            const email = document.getElementById('email').value;
-            const district = document.getElementById('district').value;
-            const price = document.getElementById('price').value;
-            
-            if(!email) { alert('請填寫 Email'); return; }
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md">
+      <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5 shadow-inner">📬</div>
+        <h3 class="text-2xl font-black text-slate-900 mb-2">最後一步！</h3>
+        <p class="text-slate-500 mb-6 text-sm font-medium">請輸入 Email，搜尋結果將顯示在此並同步寄送給您：</p>
+        <input type="email" x-model="userEmail" placeholder="example@email.com" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex gap-3">
+            <button @click="showModal = false" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">取消</button>
+            <button @click="executeSearch()" class="flex-[2] py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg">開始搜尋</button>
+        </div>
+      </div>
+    </div>
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('result').style.display = 'none';
+    <div x-show="searchResult" x-cloak class="mt-8 p-6 bg-blue-50 rounded-3xl border border-blue-100">
+        <h4 class="font-bold text-blue-800 mb-2">🔍 搜尋結果：</h4>
+        <div class="text-slate-700 text-sm leading-relaxed" x-text="searchResult"></div>
+    </div>
+  </div>
 
-            try {
-                const response = await fetch('你的_N8N_WEBHOOK_URL', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, district, price })
-                });
-                
-                const data = await response.json();
-                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-                document.getElementById('result').style.display = 'block';
-            } catch (error) {
-                alert('搜尋失敗，請檢查 n8n 連線');
-            } finally {
-                document.getElementById('loading').style.display = 'none';
+  <script>
+    function rentApp() {
+      return {
+        isSearching: false, 
+        showModal: false, 
+        userEmail: '',
+        searchResult: '',
+        minPrice: 8000, 
+        maxPrice: 25000, 
+        currentCity: '桃園市', 
+        selectedDistricts: [], 
+        selectedTags: [],
+        districtsData: {
+          '桃園市': ['桃園區', '中壢區', '八德區', '平鎮區', '蘆竹區', '龜山區'],
+          '台北市': ['大安區', '信義區', '中山區', '內湖區', '士林區', '松山區'],
+          '新北市': ['板橋區', '三重區', '中和區', '永和區', '新莊區', '淡水區']
+        },
+        tagsData: ['🐾 寵物友善', '⚡ 台水台電', '🛗 有電梯', '☀️ 獨立陽台', '🚅 近捷運', '🍳 可開伙'],
+        
+        checkPrice() {
+          if (this.minPrice > this.maxPrice) {
+            this.minPrice = this.maxPrice;
+          }
+        },
+        updateSlider() {
+          if(this.minPrice < 3000) this.minPrice = 3000;
+          if(this.maxPrice > 50000) this.maxPrice = 50000;
+        },
+        toggleDistrict(dist) {
+          this.selectedDistricts.includes(dist) ? this.selectedDistricts = this.selectedDistricts.filter(d => d !== dist) : this.selectedDistricts.push(dist);
+        },
+        toggleTag(tag) {
+          this.selectedTags.includes(tag) ? this.selectedTags = this.selectedTags.filter(t => t !== tag) : this.selectedTags.push(tag);
+        },
+
+        async executeSearch() {
+          if(!this.userEmail) { alert('請輸入 Email'); return; }
+          
+          this.showModal = false;
+          this.isSearching = true;
+          this.searchResult = '';
+
+          const payload = {
+            email: this.userEmail,
+            city: this.currentCity,
+            districts: this.selectedDistricts,
+            minPrice: this.minPrice,
+            maxPrice: this.maxPrice,
+            tags: this.selectedTags
+          };
+
+          try {
+            // 注意：請將下方的 URL 替換成你的 n8n Production Webhook URL
+            const response = await fetch('http://localhost:5678/webhook-test/search', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              // 假設 n8n 回傳的 JSON 有一個名為 message 或 data 的欄位
+              this.searchResult = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+            } else {
+              this.searchResult = '搜尋失敗，可能是次數已用完或伺服器錯誤。';
             }
+          } catch (error) {
+            this.searchResult = '連線失敗，請稍後再試。';
+          } finally {
+            this.isSearching = false;
+          }
         }
-    </script>
+      }
+    }
+  </script>
 </body>
 </html>
