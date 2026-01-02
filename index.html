@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 租屋小秘書 - 桃園版</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
+        #result { margin-top: 20px; white-space: pre-wrap; background: #f8f9fa; padding: 10px; display: none; }
+        .loading { color: #666; font-style: italic; display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🏠 AI 租屋小秘書</h2>
+        <p>輸入 Email 即可免費搜尋 3 次</p>
+        <input type="email" id="email" placeholder="請輸入您的 Email" required>
+        <select id="district">
+            <option value="桃園區">桃園區</option>
+            <option value="中壢區">中壢區</option>
+            <option value="八德區">八德區</option>
+            <option value="平鎮區">平鎮區</option>
+        </select>
+        <input type="number" id="price" placeholder="最高預算 (例如 20000)">
+        <button onclick="startSearch()">開始 AI 搜尋</button>
+        <div id="loading" class="loading">🔍 AI 正在爬取社團並分析中，請稍候約 30-45 秒...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function startSearch() {
+            const email = document.getElementById('email').value;
+            const district = document.getElementById('district').value;
+            const price = document.getElementById('price').value;
+            
+            if(!email) { alert('請填寫 Email'); return; }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const response = await fetch('你的_N8N_WEBHOOK_URL', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, district, price })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                alert('搜尋失敗，請檢查 n8n 連線');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 租屋小秘書 - 桃園版</title>
+    <style>
+        body { font-family: sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; line-height: 1.6; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
+        #result { margin-top: 20px; white-space: pre-wrap; background: #f8f9fa; padding: 10px; display: none; }
+        .loading { color: #666; font-style: italic; display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🏠 AI 租屋小秘書</h2>
+        <p>輸入 Email 即可免費搜尋 3 次</p>
+        <input type="email" id="email" placeholder="請輸入您的 Email" required>
+        <select id="district">
+            <option value="桃園區">桃園區</option>
+            <option value="中壢區">中壢區</option>
+            <option value="八德區">八德區</option>
+            <option value="平鎮區">平鎮區</option>
+        </select>
+        <input type="number" id="price" placeholder="最高預算 (例如 20000)">
+        <button onclick="startSearch()">開始 AI 搜尋</button>
+        <div id="loading" class="loading">🔍 AI 正在爬取社團並分析中，請稍候約 30-45 秒...</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function startSearch() {
+            const email = document.getElementById('email').value;
+            const district = document.getElementById('district').value;
+            const price = document.getElementById('price').value;
+            
+            if(!email) { alert('請填寫 Email'); return; }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const response = await fetch('你的_N8N_WEBHOOK_URL', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, district, price })
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                alert('搜尋失敗，請檢查 n8n 連線');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
