@@ -1,220 +1,233 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Noto Sans TC', sans-serif; }
-    [x-cloak] { display: none !important; }
-
-    .custom-bg {
-      background-image: url('https://lh3.googleusercontent.com/u/0/d/11dwBpgYLnMscVH5ZvwWnLs4dbnzR7Bvf'); 
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(8px) brightness(0.85); 
-      transform: scale(1.1);
-    }
-
-    .range-slider input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      background: transparent;
-      pointer-events: none;
-      position: absolute;
-    }
-
-    .range-slider input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 22px;
-      width: 22px;
-      border-radius: 50%;
-      background: #2563eb;
-      cursor: pointer;
-      pointer-events: auto;
-      border: 3px solid white;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Noto Sans TC', sans-serif; }
+    [x-cloak] { display: none !important; }
+    .custom-bg {
+      background-image: url('https://lh3.googleusercontent.com/u/0/d/11dwBpgYLnMscVH5ZvwWnLs4dbnzR7Bvf'); 
+      background-size: cover; background-position: center; filter: blur(8px) brightness(0.85); transform: scale(1.1);
+    }
+    .range-slider input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; pointer-events: none; position: absolute; }
+    .range-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 22px; width: 22px; border-radius: 50%; background: #2563eb; cursor: pointer; pointer-events: auto; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+  </style>
 </head>
 <body class="relative min-h-screen overflow-hidden flex items-center justify-center p-4" x-data="rentApp()">
 
-  <div class="fixed inset-0 custom-bg z-0"></div>
-  <div class="fixed inset-0 bg-blue-900/10 z-0"></div>
+  <div class="fixed inset-0 custom-bg z-0"></div>
+  <div class="fixed inset-0 bg-blue-900/10 z-0"></div>
 
-  <div class="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-8 md:p-10 border border-white/40">
-    
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-black text-slate-900 mb-2 tracking-tight">FB 租屋快搜</h1>
-      <p class="text-slate-500 text-sm font-medium leading-relaxed">不再手動刷社團！自動幫你過濾釣魚文，<br>精準鎖定全台私房房源。</p>
-    </div>
+  <div class="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-6 md:p-10 border border-white/40 max-h-[95vh] overflow-y-auto custom-scrollbar">
+    
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-black text-slate-900 mb-2 tracking-tight">FB 租屋快搜</h1>
+      <p class="text-slate-500 text-xs font-medium leading-relaxed">不再手動刷社團！設定條件後，<br>系統會將最佳房源推薦給你。</p>
+    </div>
 
-    <div class="space-y-7">
-      <div>
-        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
-          <span class="mr-2">📍</span> 您想住在哪個區域？
-        </label>
-        <div class="flex flex-wrap gap-2 mb-3">
-          <template x-for="city in Object.keys(districtsData)" :key="city">
-            <button @click="currentCity = city" 
-              :class="currentCity === city ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-              class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all" x-text="city"></button>
-          </template>
-        </div>
-        <div class="bg-slate-50/60 p-4 rounded-2xl flex flex-wrap gap-2 border border-slate-100">
-          <template x-for="dist in districtsData[currentCity]" :key="dist">
-            <button 
-              @click="toggleDistrict(dist)"
-              :class="selectedDistricts.includes(dist) ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-slate-400 border-slate-100'"
-              class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:border-blue-200"
-              x-text="dist">
-            </button>
-          </template>
-        </div>
-      </div>
+    <div class="space-y-6">
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+          <span class="mr-2">📍</span> 1. 您想住在哪個區域？
+        </label>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <template x-for="city in Object.keys(districtsData)" :key="city">
+            <button @click="currentCity = city; selectedDistricts = []" 
+              :class="currentCity === city ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="px-4 py-1.5 rounded-xl text-xs font-bold transition-all" x-text="city"></button>
+          </template>
+        </div>
+        <div class="bg-slate-50/60 p-4 rounded-2xl flex flex-wrap gap-2 border border-slate-100 max-h-32 overflow-y-auto custom-scrollbar">
+          <template x-for="dist in districtsData[currentCity]" :key="dist">
+            <button @click="toggleDistrict(dist)"
+              :class="selectedDistricts.includes(dist) ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-white text-slate-400 border-slate-100'"
+              class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all hover:border-blue-200" x-text="dist"></button>
+          </template>
+        </div>
+      </div>
 
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <label class="text-sm font-bold text-slate-700 flex items-center">
-            <span class="mr-2">💰</span> 預算範圍 (月租)
-          </label>
-          <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-            <input type="number" x-model.number="minPrice" @input="updateSlider()" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
-            <span class="text-slate-400 text-xs">~</span>
-            <input type="number" x-model.number="maxPrice" @input="updateSlider()" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
-          </div>
-        </div>
-        <div class="relative w-full h-6 flex items-center range-slider">
-          <div class="absolute w-full h-2 bg-slate-200 rounded-lg"></div>
-          <div class="absolute h-2 bg-blue-500 rounded-lg z-10"
-               :style="`left: ${((minPrice - 3000) / 47000) * 100}%; right: ${100 - ((maxPrice - 3000) / 47000) * 100}%` ">
-          </div>
-          <input type="range" min="3000" max="50000" step="500" x-model.number="minPrice" @input="checkPrice()" class="z-20">
-          <input type="range" min="3000" max="50000" step="500" x-model.number="maxPrice" @input="checkPrice()" class="z-30">
-        </div>
-      </div>
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+          <span class="mr-2">🏠</span> 2. 理想房型 (多選)
+        </label>
+        <div class="grid grid-cols-3 gap-3">
+          <template x-for="type in roomTypes" :key="type">
+            <button @click="toggleRoomType(type)"
+              :class="selectedRoomTypes.includes(type) ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-500 border-slate-200'"
+              class="py-3 rounded-2xl text-xs font-black border transition-all" x-text="type"></button>
+          </template>
+        </div>
+      </div>
 
-      <div>
-        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
-          <span class="mr-2">✨</span> 特定需求
-        </label>
-        <div class="flex flex-wrap gap-2">
-          <template x-for="tag in tagsData" :key="tag">
-            <button @click="toggleTag(tag)"
-              :class="selectedTags.includes(tag) ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-500 border-slate-200'"
-              class="px-4 py-2 rounded-full text-xs font-bold border transition-all" x-text="tag">
-            </button>
-          </template>
-        </div>
-      </div>
+      <div>
+        <div class="flex justify-between items-center mb-4">
+          <label class="text-sm font-bold text-slate-700 flex items-center">
+            <span class="mr-2">💰</span> 3. 月租預算 (3k ~ 50k)
+          </label>
+          <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+            <input type="number" x-model.number="minPrice" @blur="validatePrices" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
+            <span class="text-slate-400 text-xs">~</span>
+            <input type="number" x-model.number="maxPrice" @blur="validatePrices" class="w-16 bg-transparent text-center text-sm font-black text-blue-600 outline-none">
+          </div>
+        </div>
+        <div class="relative w-full h-6 flex items-center range-slider">
+          <div class="absolute w-full h-2 bg-slate-200 rounded-lg"></div>
+          <div class="absolute h-2 bg-blue-500 rounded-lg z-10" :style="`left: ${((minPrice - 3000) / 47000) * 100}%; right: ${100 - ((maxPrice - 3000) / 47000) * 100}%` "></div>
+          <input type="range" min="3000" max="50000" step="500" x-model.number="minPrice" @input="checkPrice()" class="z-20">
+          <input type="range" min="3000" max="50000" step="500" x-model.number="maxPrice" @input="checkPrice()" class="z-30">
+        </div>
+      </div>
 
-      <button @click="showModal = true" :disabled="isSearching"
-        class="w-full py-4.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-lg rounded-2xl shadow-xl flex items-center justify-center min-h-[64px] transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70">
-        <span x-show="isSearching" class="flex items-center" x-cloak>
-          <svg class="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          正在挖出隱藏好房...
-        </span>
-        <span x-show="!isSearching">⚡ 挖出隱藏好房</span>
-      </button>
-    </div>
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center">
+          <span class="mr-2">✨</span> 4. 其他特定需求
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <template x-for="tag in tagsData" :key="tag">
+            <button @click="toggleTag(tag)"
+              :class="selectedTags.includes(tag) ? 'bg-slate-900 text-white border-slate-900 shadow-md' : 'bg-white text-slate-500 border-slate-200'"
+              class="px-4 py-2 rounded-full text-xs font-bold border transition-all" x-text="tag"></button>
+          </template>
+        </div>
+      </div>
 
-    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md">
-      <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl">
-        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5 shadow-inner">📬</div>
-        <h3 class="text-2xl font-black text-slate-900 mb-2">最後一步！</h3>
-        <p class="text-slate-500 mb-6 text-sm font-medium">請輸入 Email，搜尋結果將顯示在此並同步寄送給您：</p>
-        <input type="email" x-model="userEmail" placeholder="example@email.com" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-500">
-        <div class="flex gap-3">
-            <button @click="showModal = false" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">取消</button>
-            <button @click="executeSearch()" class="flex-[2] py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg">開始搜尋</button>
-        </div>
-      </div>
-    </div>
+      <button @click="showModal = true" :disabled="isSearching || isCooldown"
+        :class="(isSearching || isCooldown) ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:scale-[1.02] active:scale-[0.98]'"
+        class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-lg rounded-2xl shadow-xl flex items-center justify-center min-h-[60px] transition-all">
+        <span x-show="isSearching" class="flex items-center" x-cloak>正在排入搜尋序列...</span>
+        <span x-show="!isSearching && isCooldown" x-cloak>請稍候... (<span x-text="cooldownSeconds"></span>s)</span>
+        <span x-show="!isSearching && !isCooldown">⚡ 登記租屋需求</span>
+      </button>
+    </div>
 
-    <div x-show="searchResult" x-cloak class="mt-8 p-6 bg-blue-50 rounded-3xl border border-blue-100">
-        <h4 class="font-bold text-blue-800 mb-2">🔍 搜尋結果：</h4>
-        <div class="text-slate-700 text-sm leading-relaxed" x-text="searchResult"></div>
-    </div>
-  </div>
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md">
+      <div class="bg-white rounded-[2.5rem] p-8 max-w-sm w-full text-center shadow-2xl">
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5 shadow-inner">📬</div>
+        <h3 class="text-2xl font-black text-slate-900 mb-2">接收結果</h3>
+        <p class="text-slate-500 mb-6 text-sm font-medium">請輸入聯絡 Email，當我們在 FB 發現符合您條件的房源時，會立刻寄送給您。</p>
+        <input type="email" x-model="userEmail" placeholder="example@email.com" class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl mb-4 text-center font-bold outline-none focus:ring-2 focus:ring-blue-500">
+        <div class="flex gap-3">
+            <button @click="showModal = false" class="flex-1 py-4 bg-slate-100 text-slate-500 font-bold rounded-2xl">返回</button>
+            <button @click="executeSearch()" :disabled="isSearching" class="flex-[2] py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg disabled:opacity-50">確認登記</button>
+        </div>
+      </div>
+    </div>
 
-  <script>
-    function rentApp() {
-      return {
-        isSearching: false, 
-        showModal: false, 
-        userEmail: '',
-        searchResult: '',
-        minPrice: 8000, 
-        maxPrice: 25000, 
-        currentCity: '桃園市', 
-        selectedDistricts: [], 
-        selectedTags: [],
-        districtsData: {
-          '桃園市': ['桃園區', '中壢區', '八德區', '平鎮區', '蘆竹區', '龜山區'],
-          '台北市': ['大安區', '信義區', '中山區', '內湖區', '士林區', '松山區'],
-          '新北市': ['板橋區', '三重區', '中和區', '永和區', '新莊區', '淡水區']
-        },
-        tagsData: ['🐾 寵物友善', '⚡ 台水台電', '🛗 有電梯', '☀️ 獨立陽台', '🚅 近捷運', '🍳 可開伙'],
-        
-        checkPrice() {
-          if (this.minPrice > this.maxPrice) {
-            this.minPrice = this.maxPrice;
-          }
-        },
-        updateSlider() {
-          if(this.minPrice < 3000) this.minPrice = 3000;
-          if(this.maxPrice > 50000) this.maxPrice = 50000;
-        },
-        toggleDistrict(dist) {
-          this.selectedDistricts.includes(dist) ? this.selectedDistricts = this.selectedDistricts.filter(d => d !== dist) : this.selectedDistricts.push(dist);
-        },
-        toggleTag(tag) {
-          this.selectedTags.includes(tag) ? this.selectedTags = this.selectedTags.filter(t => t !== tag) : this.selectedTags.push(tag);
-        },
+    <div x-show="searchResult" x-cloak class="mt-8 p-6 bg-blue-50 rounded-3xl border border-blue-100">
+        <h4 class="font-bold text-blue-800 mb-2">📌 狀態：</h4>
+        <div class="text-slate-700 text-sm leading-relaxed" x-text="searchResult"></div>
+    </div>
+  </div>
 
-        async executeSearch() {
-          if(!this.userEmail) { alert('請輸入 Email'); return; }
-          
-          this.showModal = false;
-          this.isSearching = true;
-          this.searchResult = '';
+  <script>
+    function rentApp() {
+      return {
+        isSearching: false, isCooldown: false, cooldownSeconds: 0, showModal: false, 
+        userEmail: '', searchResult: '', minPrice: 8000, maxPrice: 25000, 
+        currentCity: '台北市', selectedDistricts: [], selectedTags: [],
+        roomTypes: ['雅房', '獨立套房', '分租套房', '整層住家'], selectedRoomTypes: [],
+        districtsData: {
+          '台北市': ['中正區', '大同區', '中山區', '松山區', '大安區', '萬華區', '信義區', '士林區', '北投區', '內湖區', '南港區', '文山區'],
+          '新北市': ['板橋區', '三重區', '中和區', '永和區', '新莊區', '新店區', '土城區', '蘆洲區', '汐止區', '樹林區', '淡水區', '林口區', '五股區'],
+          '桃園市': ['桃園區', '中壢區', '八德區', '平鎮區', '龜山區', '蘆竹區']
+        },
+        tagsData: ['🐾 寵物友善', '⚡ 台水台電', '🛗 有電梯', '☀️ 獨立陽台', '🚅 近捷運', '🍳 可開伙'],
 
-          const payload = {
-            email: this.userEmail,
-            city: this.currentCity,
-            districts: this.selectedDistricts,
-            minPrice: this.minPrice,
-            maxPrice: this.maxPrice,
-            tags: this.selectedTags
-          };
+        init() {
+          // 初始化時檢查是否有冷卻時間 (防整頁重整刷表單)
+          const lastSubmit = localStorage.getItem('lastRentSubmit');
+          if (lastSubmit) {
+            const diff = Math.floor((Date.now() - parseInt(lastSubmit)) / 1000);
+            if (diff < 300) { // 5 分鐘冷卻 (300秒)
+              this.startCooldown(300 - diff);
+            }
+          }
+        },
 
-          try {
-            // 注意：請將下方的 URL 替換成你的 n8n Production Webhook URL
-            const response = await fetch('http://localhost:5678/webhook-test/search', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
+        checkPrice() {
+          if (this.minPrice > this.maxPrice) this.minPrice = this.maxPrice;
+        },
 
-            if (response.ok) {
-              const data = await response.json();
-              // 假設 n8n 回傳的 JSON 有一個名為 message 或 data 的欄位
-              this.searchResult = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
-            } else {
-              this.searchResult = '搜尋失敗，可能是次數已用完或伺服器錯誤。';
-            }
-          } catch (error) {
-            this.searchResult = '連線失敗，請稍後再試。';
-          } finally {
-            this.isSearching = false;
-          }
-        }
-      }
-    }
-  </script>
+        validatePrices() {
+          if (this.minPrice < 1000) this.minPrice = 1000;
+          if (this.maxPrice > 100000) this.maxPrice = 100000;
+          if (this.minPrice > this.maxPrice) this.maxPrice = this.minPrice + 1000;
+        },
+
+        toggleDistrict(dist) {
+          this.selectedDistricts.includes(dist) ? this.selectedDistricts = this.selectedDistricts.filter(d => d !== dist) : this.selectedDistricts.push(dist);
+        },
+
+        toggleRoomType(type) {
+          this.selectedRoomTypes.includes(type) ? this.selectedRoomTypes = this.selectedRoomTypes.filter(t => t !== type) : this.selectedRoomTypes.push(type);
+        },
+
+        toggleTag(tag) {
+          this.selectedTags.includes(tag) ? this.selectedTags = this.selectedTags.filter(t => t !== tag) : this.selectedTags.push(tag);
+        },
+
+        startCooldown(seconds) {
+          this.isCooldown = true;
+          this.cooldownSeconds = seconds;
+          const timer = setInterval(() => {
+            this.cooldownSeconds--;
+            if (this.cooldownSeconds <= 0) {
+              this.isCooldown = false;
+              clearInterval(timer);
+            }
+          }, 1000);
+        },
+
+        async executeSearch() {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if(!emailRegex.test(this.userEmail)) { alert('請輸入有效的 Email'); return; }
+          if(this.selectedDistricts.length === 0) { alert('請至少選擇一個行政區'); return; }
+          if(this.selectedRoomTypes.length === 0) { alert('請至少選擇一種房型'); return; }
+          
+          this.showModal = false;
+          this.isSearching = true;
+          this.searchResult = '正在將您的條件排入監控清單...';
+
+          const payload = {
+            timestamp: new Date().toISOString(),
+            email: this.userEmail,
+            city: this.currentCity,
+            districts: this.selectedDistricts.join(','),
+            roomTypes: this.selectedRoomTypes.join(','),
+            minPrice: this.minPrice,
+            maxPrice: this.maxPrice,
+            tags: this.selectedTags.join(',')
+          };
+
+          try {
+            // 注意：正式環境請更換為你的 Cloudflare/n8n 網址
+            const response = await fetch('http://localhost:5678/webhook/rent-request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+              this.searchResult = '✅ 登記成功！我們已將您的條件存入「共用監控池」。當有符合房源時會主動 Email 通知您。';
+              localStorage.setItem('lastRentSubmit', Date.now().toString());
+              this.startCooldown(300); // 5 分鐘冷卻
+            } else {
+              this.searchResult = '❌ 伺服器繁忙，請稍後再試。';
+            }
+          } catch (error) {
+            this.searchResult = '⚠️ 連線失敗。請確認 n8n 是否開啟，或網路隧道是否正常。';
+          } finally {
+            this.isSearching = false;
+          }
+        }
+      }
+    }
+  </script>
 </body>
 </html>
