@@ -7,131 +7,125 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Noto Sans TC', sans-serif; }
+    body { font-family: 'Noto Sans TC', sans-serif; margin: 0; padding: 0; }
     [x-cloak] { display: none !important; }
-    
-    /* 背景圖修正：使用 Unsplash 的城市圖，並增加亮度過濾器 */
     .custom-bg {
-      background-image: url('https://images.unsplash.com/photo-1449156001935-d2863fb72610?auto=format&fit=crop&w=1600&q=80'); 
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed; /* 讓背景固定 */
-      filter: brightness(0.7);
+      background-image: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'); 
+      background-size: cover; background-position: center; background-attachment: fixed; background-repeat: no-repeat;
+      filter: brightness(0.6) blur(2px); background-color: #1e3a8a;
     }
-
-    /* 隱藏原生 Range 樣式 */
-    .range-slider input[type="range"] {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      background: transparent;
-      pointer-events: none;
-      position: absolute;
-    }
-
-    .range-slider input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 20px;
-      width: 20px;
-      border-radius: 50%;
-      background: #2563eb;
-      cursor: pointer;
-      pointer-events: auto;
-      border: 3px solid white;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .range-slider input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; pointer-events: none; position: absolute; }
+    .range-slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #2563eb; cursor: pointer; pointer-events: auto; border: 2px solid white; box-shadow: 0 4px 6px rgb(0 0 0 / 0.2); }
+    .animate-pop { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
 </head>
-<body class="relative min-h-screen flex items-center justify-center p-4 bg-slate-900" x-data="rentApp()">
+<body class="relative min-h-screen flex items-center justify-center p-4" x-data="rentApp()">
 
   <div class="fixed inset-0 custom-bg z-0"></div>
-  <div class="fixed inset-0 bg-blue-900/20 z-0"></div>
+  <div class="fixed inset-0 bg-gradient-to-b from-blue-900/40 to-slate-900/60 z-0"></div>
 
-  <div class="relative z-10 w-full max-w-lg bg-white/95 backdrop-blur-md rounded-[2rem] shadow-2xl p-8 border border-white/20 overflow-hidden">
-    
+  <div x-show="!showModal" class="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-8 border border-white/20">
     <div class="text-center mb-6">
-      <h1 class="text-2xl font-black text-slate-900 tracking-tight">FB 租屋快搜</h1>
-      <p class="text-slate-500 text-[10px] font-bold mt-1 uppercase tracking-widest">Rental Automation Pro</p>
+      <h1 class="text-3xl font-black text-slate-900 tracking-tight">租屋小管家 AI</h1>
+      <p class="text-slate-500 text-xs font-bold mt-1 uppercase tracking-widest">AI Rental Monitor</p>
     </div>
 
-    <div class="space-y-5">
+    <div class="space-y-6">
       <div>
-        <label class="text-xs font-black text-slate-400 mb-2 block uppercase">01. 選擇區域</label>
-        <div class="flex flex-wrap gap-1.5 mb-2">
+        <label class="text-sm font-black text-slate-500 mb-3 block uppercase tracking-wider">01. 選擇區域</label>
+        <div class="flex flex-wrap gap-2 mb-3">
           <template x-for="city in Object.keys(districtsData)" :key="city">
             <button @click="currentCity = city; selectedDistricts = []" 
-              :class="currentCity === city ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
-              class="px-3 py-1 rounded-lg text-[11px] font-bold transition-all" x-text="city"></button>
+              :class="currentCity === city ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'"
+              class="px-4 py-2 rounded-xl text-sm font-bold transition-all" x-text="city"></button>
           </template>
         </div>
-        <div class="bg-slate-50 p-3 rounded-xl flex flex-wrap gap-1.5 border border-slate-100 max-h-24 overflow-y-auto custom-scrollbar">
+        <div class="bg-slate-50/80 p-4 rounded-2xl flex flex-wrap gap-2 border border-slate-100 max-h-48 overflow-y-auto shadow-inner text-sm">
           <template x-for="dist in districtsData[currentCity]" :key="dist">
             <button @click="toggleDistrict(dist)"
-              :class="selectedDistricts.includes(dist) ? 'bg-blue-600 text-white' : 'bg-white text-slate-400 border-slate-100'"
-              class="px-2.5 py-1 rounded-md text-[10px] font-bold border transition-all" x-text="dist"></button>
+              :class="selectedDistricts.includes(dist) ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200'"
+              class="px-3 py-1.5 rounded-lg font-medium border transition-all" x-text="dist"></button>
           </template>
         </div>
       </div>
 
       <div>
-        <label class="text-xs font-black text-slate-400 mb-2 block uppercase">02. 理想房型</label>
-        <div class="grid grid-cols-4 gap-2">
-          <template x-for="type in roomTypes" :key="type">
-            <button @click="toggleRoomType(type)"
-              :class="selectedRoomTypes.includes(type) ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-50 text-slate-400'"
-              class="py-2 rounded-lg text-[10px] font-black border border-transparent transition-all" x-text="type"></button>
-          </template>
+        <div class="flex justify-between items-center mb-3">
+          <label class="text-sm font-black text-slate-500 uppercase tracking-wider">02. 月租上限</label>
+          <div class="flex items-center space-x-2 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+            <span class="text-xs font-bold text-blue-600">NT$</span>
+            <input type="number" x-model.number="maxPrice" class="w-20 bg-transparent text-sm font-black text-blue-600 text-center outline-none">
+          </div>
         </div>
-      </div>
-
-      <div>
-        <div class="flex justify-between items-end mb-2">
-          <label class="text-xs font-black text-slate-400 uppercase">03. 月租預算</label>
-          <span class="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded" x-text="`$${minPrice} - $${maxPrice}`"></span>
-        </div>
-        <div class="relative w-full h-4 flex items-center range-slider px-1">
-          <div class="absolute w-full h-1.5 bg-slate-100 rounded-full"></div>
-          <div class="absolute h-1.5 bg-blue-500 rounded-full" :style="`left: ${((minPrice - 3000) / 47000) * 100}%; right: ${100 - ((maxPrice - 3000) / 47000) * 100}%` "></div>
-          <input type="range" min="3000" max="50000" step="500" x-model.number="minPrice" @input="checkPrice()">
-          <input type="range" min="3000" max="50000" step="500" x-model.number="maxPrice" @input="checkPrice()">
-        </div>
-      </div>
-
-      <div>
-        <label class="text-xs font-black text-slate-400 mb-2 block uppercase">04. 其他需求</label>
-        <div class="flex flex-wrap gap-2">
-          <template x-for="tag in tagsData" :key="tag">
-            <button @click="toggleTag(tag)"
-              :class="selectedTags.includes(tag) ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 text-slate-400'"
-              class="px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all" x-text="tag"></button>
-          </template>
+        <div class="relative w-full h-6 flex items-center range-slider px-1">
+          <div class="absolute w-full h-2 bg-slate-200 rounded-full"></div>
+          <div class="absolute h-2 bg-blue-500 rounded-full" :style="`width: ${((maxPrice - 3000) / 47000) * 100}%` "></div>
+          <input type="range" min="3000" max="50000" step="500" x-model.number="maxPrice" class="w-full">
         </div>
       </div>
 
       <div class="pt-4">
-        <button @click="showModal = true" :disabled="isSearching || isCooldown"
-          class="w-full py-4 bg-slate-900 text-white font-black text-sm rounded-2xl shadow-xl hover:bg-blue-600 transition-all disabled:opacity-30">
-          <span x-show="!isSearching && !isCooldown">⚡ 立即登記需求</span>
-          <span x-show="isSearching">正在排隊中...</span>
-          <span x-show="isCooldown" x-text="`冷卻中 (${cooldownSeconds}s)`"></span>
+        <button @click="openModal()" class="w-full py-5 bg-slate-900 text-white font-black text-base rounded-2xl shadow-2xl hover:bg-blue-600 active:scale-95 transition-all">
+          🚀 立即搜尋房源
         </button>
       </div>
     </div>
-
-    <div x-show="searchResult" x-cloak class="mt-4 p-3 bg-blue-50 rounded-xl text-[11px] font-bold text-blue-800 text-center" x-text="searchResult"></div>
   </div>
 
-  <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-    <div class="bg-white rounded-[1.5rem] p-6 max-w-xs w-full shadow-2xl">
-      <h3 class="text-lg font-black text-slate-900 mb-1">最後一步</h3>
-      <p class="text-slate-400 text-[10px] mb-4">結果將寄送至您的 Email</p>
-      <input type="email" x-model="userEmail" placeholder="your@email.com" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl mb-4 text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none text-center">
-      <div class="flex gap-2">
-          <button @click="showModal = false" class="flex-1 py-3 text-xs font-bold text-slate-400">取消</button>
-          <button @click="executeSearch()" class="flex-[2] py-3 bg-blue-600 text-white text-xs font-black rounded-xl">確認送出</button>
+  <div x-show="showModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+    <div class="bg-slate-50 rounded-[2.5rem] p-8 max-w-md w-full shadow-2xl relative animate-pop">
+      
+      <div x-show="!referralCodeGenerated">
+        <div class="text-center mb-6">
+          <h3 class="text-2xl font-black text-slate-900">最後一步</h3>
+          <p class="text-slate-500 text-sm mt-1">輸入 Email 即可獲取您的專屬邀請碼</p>
+        </div>
+
+        <div class="space-y-4 mb-6">
+          <input type="email" x-model="userEmail" placeholder="您的常用 Email" 
+            class="w-full px-5 py-4 bg-white border border-slate-200 rounded-2xl text-center font-bold focus:ring-2 focus:ring-blue-500 outline-none">
+          
+          <input type="text" x-model="referralCode" placeholder="若有朋友推薦，請輸入代碼 (選填)" 
+            class="w-full px-5 py-3 bg-white border border-slate-100 rounded-xl text-center text-sm font-medium outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 gap-3">
+          <button @click="submitAndGetCode('telegram')" :disabled="loading"
+            class="bg-blue-600 p-4 rounded-2xl text-white hover:bg-blue-700 transition-all flex items-center justify-center space-x-2">
+            <span x-show="!loading" class="font-black">✈️ 使用 Telegram 接收通知</span>
+            <span x-show="loading" class="animate-pulse">處理中...</span>
+          </button>
+          <button @click="submitAndGetCode('email')" :disabled="loading"
+            class="bg-white border-2 border-slate-200 p-4 rounded-2xl text-slate-800 hover:border-blue-400 transition-all font-black">
+            📧 使用 Email 接收通知
+          </button>
+        </div>
+        <button @click="showModal = false" class="w-full mt-6 text-slate-400 text-xs font-bold underline">返回修改條件</button>
+      </div>
+
+      <div x-show="referralCodeGenerated" class="text-center py-2">
+        <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl mx-auto mb-4 shadow-lg">🎁</div>
+        <h3 class="text-2xl font-black text-slate-900 text-center">好友分享禮</h3>
+        <p class="text-slate-600 text-sm mt-3 leading-relaxed">
+          邀請好友使用您的代碼，<br>
+          <span class="text-blue-600 font-black px-1">雙方皆可獲得 5 次</span> 免費搜尋額度！
+        </p>
+        
+        <div class="mt-6 p-6 bg-white rounded-3xl border-2 border-dashed border-blue-200 cursor-pointer hover:bg-blue-50 transition-colors" @click="copyCode()">
+          <span class="text-4xl font-black text-blue-600 tracking-widest" x-text="generatedCode"></span>
+          <div class="text-[10px] text-blue-400 mt-2 font-bold uppercase">點擊即可複製代碼</div>
+        </div>
+
+        <div class="mt-8 space-y-3">
+          <button @click="shareToLine()" class="w-full py-4 bg-[#06C755] text-white font-black rounded-2xl shadow-xl flex items-center justify-center">
+            <span>LINE 分享給好友</span>
+          </button>
+          <button @click="proceedToFinal()" class="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl">
+            下一步：前往綁定機器人
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -139,51 +133,89 @@
   <script>
     function rentApp() {
       return {
-        isSearching: false, isCooldown: false, cooldownSeconds: 0, showModal: false, 
-        userEmail: '', searchResult: '', minPrice: 8000, maxPrice: 20000, 
-        currentCity: '台北市', selectedDistricts: [], selectedTags: [],
-        roomTypes: ['雅房', '套房', '分租', '整層'], selectedRoomTypes: [],
+        showModal: false,
+        loading: false,
+        referralCodeGenerated: false,
+        generatedCode: '',
+        userEmail: '',
+        referralCode: '',
+        maxPrice: 20000,
+        currentCity: '桃園市',
+        selectedDistricts: [],
+        notifyType: '',
         districtsData: {
-          '台北市': ['中正', '大同', '中山', '松山', '大安', '萬華', '信義', '士林', '北投', '內湖', '南港', '文山'],
-          '新北市': ['板橋', '三重', '中和', '永和', '新莊', '新店', '土城', '蘆洲', '汐止', '樹林', '淡水', '林口'],
-          '桃園市': ['桃園區', '中壢', '八德', '平鎮', '龜山', '蘆竹']
+          '桃園市': ['桃園區', '中壢區', '八德區', '平鎮區', '大溪區', '楊梅區', '龜山區', '蘆竹區', '大園區', '觀音區', '新屋區', '龍潭區'],
+          '台北市': ['中正區', '大同區', '中山區', '松山區', '大安區', '萬華區', '信義區', '士林區', '北投區', '內湖區', '南港區', '文山區'],
+          '新北市': ['板橋區', '三重區', '中和區', '永和區', '新莊區', '新店區', '土城區', '蘆洲區', '汐止區', '樹林區', '淡水區', '林口區', '五股區']
         },
-        tagsData: ['🐾 寵物', '⚡ 台水電', '🛗 電梯', '☀️ 陽台', '🚅 近捷運', '🍳 開伙'],
 
-        init() {
-          const lastSubmit = localStorage.getItem('lastRentSubmit');
-          if (lastSubmit) {
-            const diff = Math.floor((Date.now() - parseInt(lastSubmit)) / 1000);
-            if (diff < 300) this.startCooldown(300 - diff);
+        openModal() {
+          if(this.selectedDistricts.length === 0) {
+            alert('請至少選擇一個行政區');
+            return;
+          }
+          this.showModal = true;
+        },
+
+        toggleDistrict(dist) {
+          if (this.selectedDistricts.includes(dist)) {
+            this.selectedDistricts = this.selectedDistricts.filter(d => d !== dist);
+          } else {
+            this.selectedDistricts.push(dist);
           }
         },
-        checkPrice() { if (this.minPrice > this.maxPrice) this.minPrice = this.maxPrice; },
-        toggleDistrict(dist) { this.selectedDistricts.includes(dist) ? this.selectedDistricts = this.selectedDistricts.filter(d => d !== dist) : this.selectedDistricts.push(dist); },
-        toggleRoomType(type) { this.selectedRoomTypes.includes(type) ? this.selectedRoomTypes = this.selectedRoomTypes.filter(t => t !== type) : this.selectedRoomTypes.push(type); },
-        toggleTag(tag) { this.selectedTags.includes(tag) ? this.selectedTags = this.selectedTags.filter(t => t !== tag) : this.selectedTags.push(tag); },
-        startCooldown(seconds) {
-          this.isCooldown = true; this.cooldownSeconds = seconds;
-          const timer = setInterval(() => { this.cooldownSeconds--; if (this.cooldownSeconds <= 0) { this.isCooldown = false; clearInterval(timer); } }, 1000);
-        },
-        async executeSearch() {
-          if(!this.userEmail.includes('@')) { alert('Email 格式錯誤'); return; }
-          this.showModal = false; this.isSearching = true;
+
+        async submitAndGetCode(type) {
+          if(!this.userEmail.includes('@')) { alert('請填寫正確的 Email'); return; }
+          this.loading = true;
+          this.notifyType = type;
+
           try {
-            const response = await fetch('http://localhost:5678/webhook/rent-request', {
+            const response = await fetch('https://caressive-thrasonically-tomi.ngrok-free.dev/webhook/save-rental-data', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                email: this.userEmail, city: this.currentCity, districts: this.selectedDistricts.join(','),
-                roomTypes: this.selectedRoomTypes.join(','), minPrice: this.minPrice, maxPrice: this.maxPrice, tags: this.selectedTags.join(',')
+                email: this.userEmail,
+                districts: this.selectedDistricts.join(','),
+                maxPrice: this.maxPrice,
+                input_referral_code: this.referralCode,
+                notify_method: type
               })
             });
+
             if (response.ok) {
-              this.searchResult = '✅ 登記成功！符合條件時會立刻通知您。';
-              localStorage.setItem('lastRentSubmit', Date.now().toString());
-              this.startCooldown(300);
+              const result = await response.json();
+              // 如果 n8n 沒回傳 code，給一個預設值測試
+              this.generatedCode = result.referral_code || 'RENT' + Math.floor(Math.random()*900 + 100);
+              this.referralCodeGenerated = true;
+            } else {
+              alert('伺服器回應錯誤，請檢查 n8n 設定');
             }
-          } catch (e) { this.searchResult = '⚠️ 連線失敗，請檢查網路。'; }
-          finally { this.isSearching = false; }
+          } catch (e) {
+            alert('無法連線到伺服器 (請確認 Webhook 網址正確且已開啟)');
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        copyCode() {
+          navigator.clipboard.writeText(this.generatedCode);
+          alert('邀請碼 ' + this.generatedCode + ' 已複製！');
+        },
+
+        shareToLine() {
+          const msg = `我正在用這個 AI 租屋管家，超好用！\n使用我的邀請碼「${this.generatedCode}」我們都可以多拿 5 次免費搜尋！\n點此開始：${window.location.href}`;
+          window.open(`https://social-plugins.line.me/lineit/share?text=${encodeURIComponent(msg)}`, '_blank');
+        },
+
+        proceedToFinal() {
+          if (this.notifyType === 'telegram') {
+            const encodedEmail = btoa(this.userEmail).replace(/=/g, "");
+            window.location.href = `./go-tg.html?email=${encodedEmail}`;
+          } else {
+            alert('監控已啟動！符合條件的房源將發送至：' + this.userEmail);
+            location.reload();
+          }
         }
       }
     }
